@@ -370,7 +370,6 @@ angular.module('copayApp.controllers').controller('indexController',
           return;
         }
         $log.debug('Wallet Status:', walletStatus);
-        self.setPendingTxps(walletStatus.pendingTxps);
         self.setFeesOpts();
 
         // Status Shortcuts
@@ -389,6 +388,7 @@ angular.module('copayApp.controllers').controller('indexController',
           self.walletAsset = walletService.updateWalletAsset();
           self.totalAssetBalanceStr = walletService.totalAssetBalanceStr;
           $rootScope.$emit('Local/AssetBalanceUpdated');
+          self.setPendingTxps(walletStatus.pendingTxps);
         }
 
         $rootScope.$on('ColoredCoins/AssetsUpdated', updateAssetBalance);
