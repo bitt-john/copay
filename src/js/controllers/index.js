@@ -99,7 +99,7 @@ angular.module('copayApp.controllers').controller('indexController',
     self.spendUnconfirmed = null;
 
     self.totalBalanceStr = null;
-    self.totalAssetBalanceStr = null;
+    self.walletAsset = {};
     self.availableBalanceStr = null;
     self.lockedBalanceStr = null;
 
@@ -348,7 +348,7 @@ angular.module('copayApp.controllers').controller('indexController',
         self.setOngoingProcess('updatingStatus', true);
 
       $log.debug('Updating Status:', fc.credentials.walletName, tries);
-      self.totalAssetBalanceStr = null;
+      self.walletAsset = {};
       get(function(err, walletStatus) {
         var currentStatusHash = _walletStatusHash(walletStatus);
         $log.debug('Status update. hash:' + currentStatusHash + ' Try:' + tries);
@@ -387,9 +387,7 @@ angular.module('copayApp.controllers').controller('indexController',
 
         function updateAssetBalance(event) {
           self.walletAsset = walletService.updateWalletAsset();
-          self.isAssetWallet = walletService.isAssetWallet;
           self.totalAssetBalanceStr = walletService.totalAssetBalanceStr;
-          self.walletUnit = walletService.walletUnit;
           $rootScope.$emit('Local/AssetBalanceUpdated');
         }
 
