@@ -386,6 +386,7 @@ angular.module('copayApp.controllers').controller('indexController',
         
         $rootScope.$on('Local/WalletAssetUpdated', function() {
           self.asset = walletService.walletAsset;
+          updateAndFilterHistory(false);
         });
         
         // Notify external addons or plugins
@@ -944,8 +945,8 @@ angular.module('copayApp.controllers').controller('indexController',
 
         if (walletId == profileService.focusedClient.credentials.walletId) {
           self.completeHistory = newHistory;
-          self.txHistory = newHistory.slice(0, self.historyShowLimit);
-          self.historyShowShowAll = newHistory.length >= self.historyShowLimit;
+          updateHistoryColors();
+          updateAndFilterHistory(false);
         }
 
         return storageService.setTxHistory(JSON.stringify(newHistory), walletId, function() {
@@ -961,7 +962,7 @@ angular.module('copayApp.controllers').controller('indexController',
       $rootScope.$apply();
       $timeout(function() {
         self.historyRendering = false;
-        self.txHistory = self.completeHistory;
+        updateAndFilterHistory(true);
       }, 100);
     }, 100);
   };
@@ -1182,13 +1183,15 @@ angular.module('copayApp.controllers').controller('indexController',
   };
   
   self.filterProposals = function(txp) {
-    return true;
-    return !self.asset.isAsset || 
-      (txp.customData && txp.customData.asset.assetId === self.asset.assetId);
+    if (self.asset.isAsset) {
+      // for asset wallet show only colored tx of the wallet color
+      return txp.isColored && txp.customData.asset.assetId === self.asset.assetId;
+    } else {
+      return !txp.isColored; // show only colorless tx for btc wallet
+    }
   };
   
   self.filterHistory = function(tx) {
-    return true;
     if (self.asset.isAsset) {
       // for asset wallet show only colored tx of the wallet color
       return tx.isColored && tx.assetId === self.asset.assetId; 
@@ -1220,6 +1223,7 @@ angular.module('copayApp.controllers').controller('indexController',
   $rootScope.$on('Local/ClearHistory', function(event) {
     $log.debug('The wallet transaction history has been deleted');
     self.txHistory = self.completeHistory = [];
+    updateAndFilterHistory(false);
     self.debounceUpdateHistory();
   });
 
@@ -1362,25 +1366,35 @@ angular.module('copayApp.controllers').controller('indexController',
     });
   });
   
-  $scope.$watch(function() { return self.txHistory; }, function() {
-    $q.all(coloredCoins.getAssets(), coloredCoins.getColorTransactions())
-      .then(function(assets, colorHistory) {
-        lodash.forEach(self.txHistory, function(tx) {
-          var colorTx = colorHistory[tx.txid];
-          if (tx.isColored || !colorTx || !colorTx.colored) return;
-          
-          tx.isColored = true;
-          tx.assetId = colorTx.vout[0].assets[0].assetId;
+  var updateHistoryColors = function() {
+    coloredCoins.whenAvailable(function(assets, coloredTxs) {
+      lodash.forEach(self.completeHistory, function(tx) {
+        var colorTx = coloredTxs[tx.txid];
+        if (tx.isColored || !colorTx || !colorTx.colored) return;
+        
+        tx.isColored = true;
+        var nVout = colorTx.ccdata[0].payments[0].output;
+        tx.assetId = colorTx.vout[nVout].assets[0].assetId;
 
-          var asset = coloredCoins.assetsMap[tx.assetId];
-          var amount = lodash.sum(lodash.pluck(colorTx.vout[0].assets, 'amount'));
-          tx.assetAmountStr = coloredCoins.formatAssetAmount(amount, asset);
-        });
-        $timeout(function() {
-          $rootScope.$digest();
-        });
+        var asset = coloredCoins.assetsMap[tx.assetId];
+        if (!asset) return; // history may contain unsupported assets
+        var amount = lodash.sum(lodash.pluck(colorTx.vout[nVout].assets, 'amount'));
+        tx.assetAmountStr = coloredCoins.formatAssetAmount(amount, asset);
       });
-  });
+    });
+  };
+  
+  var updateAndFilterHistory = function(showAll) {
+    coloredCoins.whenAvailable(function(assets, coloredTxs) {
+      var newHistory = lodash.filter(self.completeHistory, self.filterHistory);
+      if (!showAll) {
+        self.txHistory = newHistory.slice(0, self.historyShowLimit);
+        self.historyShowShowAll = newHistory.length > self.historyShowLimit;
+      } else {
+        self.txHistory = newHistory;
+      }
+    });
+  };
 
   $rootScope.$on('Local/WalletImported', function(event, walletId) {
     self.needsBackup = false;
@@ -1389,6 +1403,7 @@ angular.module('copayApp.controllers').controller('indexController',
       addressService.expireAddress(walletId, function(err) {
         $timeout(function() {
           self.txHistory = self.completeHistory = [];
+          updateAndFilterHistory(false);
           storageService.removeTxHistory(walletId, function() {
             self.startScan(walletId);
           });
