@@ -1382,6 +1382,7 @@ angular.module('copayApp.controllers').controller('indexController',
         var nVout = colorTx.ccdata[0].payments[0].output;
         var asset = colorTx.vout[nVout].assets[0];
         tx.assetId = asset.assetId;
+        tx.issuanceTxId = asset.issueTxid;
         
         var amount = lodash.sum(lodash.pluck(colorTx.vout[nVout].assets, 'amount'));
         asset.divisible = asset.divisibility;
