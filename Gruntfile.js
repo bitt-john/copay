@@ -66,7 +66,7 @@ module.exports = function(grunt) {
           'bower_components/copay-colored-coins-plugin/dist/copayColoredCoins.js',
           'bower_components/copay-colored-coins-plugin/config.js'
         ],
-        dest: 'public/lib/angular.js'
+        dest: 'public_html/lib/angular.js'
       },
       js: {
         src: [
@@ -81,11 +81,11 @@ module.exports = function(grunt) {
           'src/js/version.js',
           'src/js/init.js'
         ],
-        dest: 'public/js/copay.js'
+        dest: 'public_html/js/copay.js'
       },
       css: {
         src: ['src/css/*.css'],
-        dest: 'public/css/copay.css'
+        dest: 'public_html/css/copay.css'
       },
       foundation: {
         src: [
@@ -95,7 +95,7 @@ module.exports = function(grunt) {
           'bower_components/angular-ui-switch/angular-ui-switch.css',
           'bower_components/copay-colored-coins-plugin/css/assets.css'
         ],
-        dest: 'public/css/foundation.css',
+        dest: 'public_html/css/foundation.css',
       }
     },
     uglify: {
@@ -104,8 +104,8 @@ module.exports = function(grunt) {
       },
       prod: {
         files: {
-          'public/js/copay.js': ['public/js/copay.js'],
-          'public/lib/angular.js': ['public/lib/angular.js']
+          'public_html/js/copay.js': ['public_html/js/copay.js'],
+          'public_html/lib/angular.js': ['public_html/lib/angular.js']
         }
       }
     },
@@ -113,9 +113,9 @@ module.exports = function(grunt) {
       pot: {
         files: {
           'i18n/po/template.pot': [
-            'public/index.html', 
-            'public/views/*.html', 
-            'public/views/**/*.html',
+            'public_html/index.html',
+            'public_html/views/*.html',
+            'public_html/views/**/*.html',
             'src/js/routes.js',
             'src/js/services/*.js',
             'src/js/controllers/*.js'
@@ -138,12 +138,12 @@ module.exports = function(grunt) {
         expand: true,
         flatten: true,
         src: 'bower_components/foundation-icon-fonts/foundation-icons.*',
-        dest: 'public/icons/'
+        dest: 'public_html/icons/'
       },
       linux: {
         files: [
-          {expand: true, cwd: 'webkitbuilds/',src: ['.desktop', '../public/img/icons/favicon.ico', '../public/img/icons/icon-256.png'],dest: 'webkitbuilds/copay/linux32/', flatten: true, filter: 'isFile' },
-          {expand: true, cwd: 'webkitbuilds/',src: ['.desktop', '../public/img/icons/favicon.ico', '../public/img/icons/icon-256.png'],dest: 'webkitbuilds/copay/linux64/', flatten: true, filter: 'isFile' },
+          {expand: true, cwd: 'webkitbuilds/',src: ['.desktop', '../public_html/img/icons/favicon.ico', '../public_html/img/icons/icon-256.png'],dest: 'webkitbuilds/copay/linux32/', flatten: true, filter: 'isFile' },
+          {expand: true, cwd: 'webkitbuilds/',src: ['.desktop', '../public_html/img/icons/favicon.ico', '../public_html/img/icons/icon-256.png'],dest: 'webkitbuilds/copay/linux64/', flatten: true, filter: 'isFile' },
         ],
       }
     },
@@ -170,10 +170,10 @@ module.exports = function(grunt) {
           platforms: ['win','osx','linux'],
           buildDir: './webkitbuilds',
           version: '0.12.2',
-          macIcns: './public/img/icons/icon.icns',
-          exeIco: './public/img/icons/icon.ico'
+          macIcns: './public_html/img/icons/icon.icns',
+          exeIco: './public_html/img/icons/icon.ico'
       },
-      src: ['./package.json', './public/**/*']
+      src: ['./package.json', './public_html/**/*']
     },
     compress: {
       linux32: {
